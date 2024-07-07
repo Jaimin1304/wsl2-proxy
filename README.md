@@ -3,10 +3,16 @@ wsl2-proxy is a simple tool to configure wsl2 to use the windows host's proxy. E
 
 wsl2-proxy是一个配置wsl2使用windows宿主机代理的简单工具。轻松简单，一键搞定。
 
-# How to use 如何使用
-This tool assumes you have enabled a proxy on the Windows host, exposed a local proxy port, and allowed LAN connections to the proxy.
+# Prerequisites 前置条件
+The tool assumes you have enabled a proxy on the Windows host, exposed a local proxy port, and allowed LAN connections to the proxy.
 
 此工具默认你已经在windows宿主机上开启了代理，暴露了一个本地代理端口，并且该代理允许来自局域网的连接。
+
+# How to use 如何使用
+Run the following script in wsl2 and restart the terminal to take effect：
+
+在wsl2中运行以下脚本，然后重启终端生效：
+
 
 ## Configure proxy settings 配置代理
 ```
