@@ -1,2 +1,26 @@
 # wsl2-proxy
-A simple tool to let wsl2 use the windows host's proxy. 一个让wsl2使用windows宿主机代理的简单工具。
+wsl2-proxy is a simple tool to configure wsl2 to use the windows host's proxy. Effortless and simple, done with one click.
+wsl2-proxy是一个配置wsl2使用windows宿主机代理的简单工具。轻松简单，一键搞定。
+
+# How to use 如何使用
+
+## Configure proxy settings 配置代理
+```
+./config_wsl2proxy.sh:
+Usage: ./config_wsl2proxy.sh [-a] [-d] [-g] [-s] [-p PORT]
+  -a    Configure apt proxy
+  -d    Configure Docker proxy
+  -g    Configure Git proxy
+  -s    Configure SSH proxy
+  -p    Set proxy port (default: 1080)
+```
+
+## Remove proxy settings 移除代理
+```
+./remove_wsl2proxy.sh:
+Usage: ./remove_wsl2proxy.sh [-a] [-d] [-g] [-s]
+  -a    Remove apt proxy
+  -d    Remove Docker proxy
+  -g    Remove Git proxy
+  -s    Remove SSH proxy
+```
