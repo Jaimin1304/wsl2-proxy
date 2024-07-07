@@ -9,7 +9,7 @@ The tool assumes you have enabled a proxy on the Windows host, exposed a local p
 此工具默认你已经在windows宿主机上开启了代理，暴露了一个本地代理端口，并且该代理允许来自局域网的连接。
 
 # How to use 如何使用
-Run the following script in wsl2 and restart the terminal to take effect：
+Run the following scripts in wsl2 and restart the terminal to take effect：
 
 在wsl2中运行以下脚本，然后重启终端生效：
 
