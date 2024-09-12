@@ -50,13 +50,11 @@ WINDOWS_HOST_IP=$(cat /etc/resolv.conf | grep nameserver | awk '{ print $2 }')
 # 检查是否成功获取 IP 地址
 if [ -z "$WINDOWS_HOST_IP" ]; then
     echo "Unable to retrieve the IP address of the Windows host. Please check if the /etc/resolv.conf file exists and contains a nameserver entry."
-    echo "无法获取 Windows 宿主机的 IP 地址。请检查 /etc/resolv.conf 文件是否存在并包含 nameserver 条目。"
     exit 1
 fi
 
 # 配置环境变量
 echo "Configuring environment variables..."
-echo "配置环境变量..."
 BASHRC_CONTENT=$(
     cat <<EOF
 export http_proxy="http://$WINDOWS_HOST_IP:$HTTP_PROXY_PORT"
@@ -76,7 +74,6 @@ source ~/.bashrc
 # 配置 apt 代理
 if [ "$CONFIGURE_APT" = true ]; then
     echo "Configuring apt proxy..."
-    echo "配置 apt 代理..."
     APT_CONF_DIR="/etc/apt/apt.conf.d"
     APT_PROXY_CONF="$APT_CONF_DIR/proxy.conf"
 
@@ -91,7 +88,6 @@ fi
 # 配置 Docker 代理
 if [ "$CONFIGURE_DOCKER" = true ]; then
     echo "Configuring Docker proxy..."
-    echo "配置 Docker 代理..."
     DOCKER_SERVICE_DIR="/etc/systemd/system/docker.service.d"
     DOCKER_PROXY_CONF="$DOCKER_SERVICE_DIR/http-proxy.conf"
 
@@ -111,7 +107,6 @@ fi
 # 配置 Git 代理
 if [ "$CONFIGURE_GIT" = true ]; then
     echo "Configuring Git proxy..."
-    echo "配置 Git 代理..."
     git config --global http.proxy "http://$WINDOWS_HOST_IP:$HTTP_PROXY_PORT"
     git config --global https.proxy "http://$WINDOWS_HOST_IP:$HTTPS_PROXY_PORT"
 fi
@@ -119,7 +114,6 @@ fi
 # 配置 SSH 代理
 if [ "$CONFIGURE_SSH" = true ]; then
     echo "Configuring SSH proxy..."
-    echo "配置 SSH 代理..."
     mkdir -p ~/.ssh
     SSH_CONFIG_CONTENT=$(
         cat <<EOF
@@ -137,4 +131,3 @@ EOF
 fi
 
 echo "Proxy configuration completed. Please reopen the terminal to apply the changes."
-echo "代理配置完成。请重新打开终端以使更改生效。"
