@@ -45,7 +45,7 @@ while getopts "adgsp:" opt; do
 done
 
 # 获取 Windows 宿主机的 IP 地址
-WINDOWS_HOST_IP=$(cat /etc/resolv.conf | grep nameserver | awk '{ print $2 }')
+WINDOWS_HOST_IP=$(ip route | grep default | awk '{print $3}')
 
 # 检查是否成功获取 IP 地址
 if [ -z "$WINDOWS_HOST_IP" ]; then
