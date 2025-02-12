@@ -5,22 +5,24 @@ CONFIGURE_APT=false
 CONFIGURE_DOCKER=false
 CONFIGURE_GIT=false
 CONFIGURE_SSH=false
+CONFIGURE_NPM=false  # 新增 npm 配置选项
 HTTP_PROXY_PORT=1080
 HTTPS_PROXY_PORT=1080
 
 # 显示帮助信息
 usage() {
-    echo "Usage: $0 [-a] [-d] [-g] [-s] [-p PORT]"
+    echo "Usage: $0 [-a] [-d] [-g] [-s] [-n] [-p PORT]"
     echo "  -a    Configure apt proxy"
     echo "  -d    Configure Docker proxy"
     echo "  -g    Configure Git proxy"
     echo "  -s    Configure SSH proxy"
+    echo "  -n    Configure NPM proxy"  # 新增帮助信息
     echo "  -p    Set proxy port (default: 1080)"
     exit 1
 }
 
 # 解析命令行参数
-while getopts "adgsp:" opt; do
+while getopts "adgsnp:" opt; do  # 添加 n 选项
     case ${opt} in
     a)
         CONFIGURE_APT=true
@@ -33,6 +35,9 @@ while getopts "adgsp:" opt; do
         ;;
     s)
         CONFIGURE_SSH=true
+        ;;
+    n)  # 新增 npm 选项处理
+        CONFIGURE_NPM=true
         ;;
     p)
         HTTP_PROXY_PORT=$OPTARG
@@ -55,8 +60,7 @@ fi
 
 # 配置环境变量
 echo "Configuring environment variables..."
-BASHRC_CONTENT=$(
-    cat <<EOF
+BASHRC_CONTENT=$(cat <<EOF
 export http_proxy="http://$WINDOWS_HOST_IP:$HTTP_PROXY_PORT"
 export https_proxy="http://$WINDOWS_HOST_IP:$HTTPS_PROXY_PORT"
 export no_proxy="localhost,127.0.0.1,::1"
@@ -76,11 +80,9 @@ if [ "$CONFIGURE_APT" = true ]; then
     echo "Configuring apt proxy..."
     APT_CONF_DIR="/etc/apt/apt.conf.d"
     APT_PROXY_CONF="$APT_CONF_DIR/proxy.conf"
-
     if [ ! -d "$APT_CONF_DIR" ]; then
         sudo mkdir -p "$APT_CONF_DIR"
     fi
-
     echo "Acquire::http::Proxy \"http://$WINDOWS_HOST_IP:$HTTP_PROXY_PORT\";" | sudo tee $APT_PROXY_CONF >/dev/null
     echo "Acquire::https::Proxy \"http://$WINDOWS_HOST_IP:$HTTPS_PROXY_PORT\";" | sudo tee -a $APT_PROXY_CONF >/dev/null
 fi
@@ -90,15 +92,12 @@ if [ "$CONFIGURE_DOCKER" = true ]; then
     echo "Configuring Docker proxy..."
     DOCKER_SERVICE_DIR="/etc/systemd/system/docker.service.d"
     DOCKER_PROXY_CONF="$DOCKER_SERVICE_DIR/http-proxy.conf"
-
     if [ ! -d "$DOCKER_SERVICE_DIR" ]; then
         sudo mkdir -p "$DOCKER_SERVICE_DIR"
     fi
-
     echo "[Service]" | sudo tee $DOCKER_PROXY_CONF >/dev/null
     echo "Environment=\"HTTP_PROXY=http://$WINDOWS_HOST_IP:$HTTP_PROXY_PORT\"" | sudo tee -a $DOCKER_PROXY_CONF >/dev/null
     echo "Environment=\"HTTPS_PROXY=http://$WINDOWS_HOST_IP:$HTTPS_PROXY_PORT\"" | sudo tee -a $DOCKER_PROXY_CONF >/dev/null
-
     # 重新加载并重启 Docker 服务
     sudo systemctl daemon-reload
     sudo systemctl restart docker
@@ -115,19 +114,30 @@ fi
 if [ "$CONFIGURE_SSH" = true ]; then
     echo "Configuring SSH proxy..."
     mkdir -p ~/.ssh
-    SSH_CONFIG_CONTENT=$(
-        cat <<EOF
+    SSH_CONFIG_CONTENT=$(cat <<EOF
 Host github.com
     Hostname ssh.github.com
     Port 443
     ProxyCommand nc -X 5 -x $WINDOWS_HOST_IP:$HTTP_PROXY_PORT %h %p
 EOF
-    )
-
+)
     # 检查是否已存在相同的代理设置，避免重复添加
     if ! grep -q "$SSH_CONFIG_CONTENT" ~/.ssh/config; then
         echo "$SSH_CONFIG_CONTENT" >>~/.ssh/config
     fi
+fi
+
+# 配置 NPM 代理
+if [ "$CONFIGURE_NPM" = true ]; then
+    echo "Configuring NPM proxy..."
+    # 配置 HTTP 代理
+    npm config set proxy "http://$WINDOWS_HOST_IP:$HTTP_PROXY_PORT"
+    npm config set https-proxy "http://$WINDOWS_HOST_IP:$HTTPS_PROXY_PORT"
+    
+    # 配置 noproxy 以跳过本地连接
+    npm config set noproxy "localhost,127.0.0.1,::1"
+    
+    echo "NPM proxy configuration completed."
 fi
 
 echo "Proxy configuration completed. Please reopen the terminal to apply the changes."

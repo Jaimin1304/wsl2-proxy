@@ -5,19 +5,21 @@ REMOVE_APT=false
 REMOVE_DOCKER=false
 REMOVE_GIT=false
 REMOVE_SSH=false
+REMOVE_NPM=false  # 新增 npm 移除选项
 
 # 显示帮助信息
 usage() {
-    echo "Usage: $0 [-a] [-d] [-g] [-s]"
+    echo "Usage: $0 [-a] [-d] [-g] [-s] [-n]"
     echo "  -a    Remove apt proxy"
     echo "  -d    Remove Docker proxy"
     echo "  -g    Remove Git proxy"
     echo "  -s    Remove SSH proxy"
+    echo "  -n    Remove NPM proxy"  # 新增帮助信息
     exit 1
 }
 
 # 解析命令行参数
-while getopts "adgs" opt; do
+while getopts "adgsn" opt; do  # 添加 n 选项
     case ${opt} in
         a )
             REMOVE_APT=true
@@ -30,6 +32,9 @@ while getopts "adgs" opt; do
             ;;
         s )
             REMOVE_SSH=true
+            ;;
+        n )  # 新增 npm 选项处理
+            REMOVE_NPM=true
             ;;
         * )
             usage
@@ -51,7 +56,7 @@ if [ "$REMOVE_APT" = true ]; then
     echo "Removing apt proxy..."
     APT_CONF_DIR="/etc/apt/apt.conf.d"
     APT_PROXY_CONF="$APT_CONF_DIR/proxy.conf"
-
+    
     if [ -f "$APT_PROXY_CONF" ]; then
         sudo rm -f "$APT_PROXY_CONF"
     fi
@@ -62,11 +67,11 @@ if [ "$REMOVE_DOCKER" = true ]; then
     echo "Removing Docker proxy..."
     DOCKER_SERVICE_DIR="/etc/systemd/system/docker.service.d"
     DOCKER_PROXY_CONF="$DOCKER_SERVICE_DIR/http-proxy.conf"
-
+    
     if [ -f "$DOCKER_PROXY_CONF" ]; then
         sudo rm -f "$DOCKER_PROXY_CONF"
     fi
-
+    
     # 重新加载并重启 Docker 服务
     sudo systemctl daemon-reload
     sudo systemctl restart docker
@@ -86,6 +91,17 @@ if [ "$REMOVE_SSH" = true ]; then
     if [ -f "$SSH_CONFIG_FILE" ]; then
         sed -i '/Host github.com/,+4d' "$SSH_CONFIG_FILE"
     fi
+fi
+
+# 移除 NPM 代理
+if [ "$REMOVE_NPM" = true ]; then
+    echo "Removing NPM proxy..."
+    # 移除 HTTP 和 HTTPS 代理配置
+    npm config delete proxy
+    npm config delete https-proxy
+    # 移除 noproxy 配置
+    npm config delete noproxy
+    echo "NPM proxy configuration removed."
 fi
 
 echo "Proxy configurations removed."
